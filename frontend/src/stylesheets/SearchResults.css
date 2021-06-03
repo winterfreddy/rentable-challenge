@@ -1,0 +1,19 @@
+.results-container {
+    padding-top: 10px;
+}
+
+.results-box {
+    padding: 15px 0;
+}
+
+.results-box > a {
+    display: block;
+    text-decoration: none;
+    padding-left: 20px;
+}
+
+.results-box:hover {
+    cursor: pointer;
+    background-color: rgb(240, 240, 240);
+    border-radius: 5px;
+}

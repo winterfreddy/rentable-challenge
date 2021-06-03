@@ -8,8 +8,18 @@
 	position: relative;
 }
 
-.search-container input {
-	width: 100%;
+.search-container-bar {
+	display: flex;
+	align-content: space-between;
+}
+
+.search-container-bar > label:first-child {
+	font-size: 36px;
+	padding: 16px 10px;
+}
+
+.search-container-bar input {
+	width: 140%;
 	padding: 16px;
 	font-size: 36px;
 	font-style: italic;
@@ -20,8 +30,8 @@
 
 .search-icon {
 	position: absolute;
-	top: -10px;
+	top: 25px;
 	font-size: 24px;
 	color: #555;
-	right: 18px;
+	right: -140px;
 }

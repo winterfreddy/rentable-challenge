@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import '../stylesheets/Search.css';
+import SearchResults from './SearchResults';
 
 class Search extends React.Component {
 
@@ -18,7 +19,8 @@ class Search extends React.Component {
 
     handleChange(e) {
         const query = e.target.value;
-
+        window.localStorage.removeItem('query');
+            
         if(!query) {
             this.setState({ query, results: [], message: '' } );
         }
@@ -29,6 +31,19 @@ class Search extends React.Component {
         }
     };
 
+    componentDidMount() {
+        this.checkLocalStorage();
+    }
+
+    checkLocalStorage() {
+        let data = window.localStorage.getItem('query');
+        if(data !== "null" && data !== "undefined") {
+            this.setState({ query: data }, () => {
+                this.fetchSearchResults(data);
+            });
+        }
+    }
+
     fetchSearchResults = (query) => {
         const searchURL = 'https://abodo-misc.s3.amazonaws.com/us_cities.json';
         if (this.cancel) {
@@ -37,9 +52,10 @@ class Search extends React.Component {
         this.cancel = axios.CancelToken.source();
         
         axios.get(searchURL, { cancelToken: this.cancel.token })
-            .then(res => res.json().filter(entry => (entry.name).includes(query) || (entry.state_name).includes(query)))
-            .then((data) => {
-                const resultNotFoundMsg = !data.length ? 'No places match requested query. Search differently.' : '';
+            .then(res => {
+                window.localStorage.setItem('query', query);
+                let data = res.data.filter(entry => (entry.name).includes(query) || (entry.state_name).includes(query));
+                const resultNotFoundMsg = !data.length ? 'No places found. Search differently.' : '';
                 this.setState({
                     results: data,
                     message: resultNotFoundMsg
@@ -47,44 +63,32 @@ class Search extends React.Component {
             })
             .catch((error) => {
                 if (axios.isCancel(error) || error) {
-                    this.setState({ message: 'Failed to fetch results.' });
+                    this.setState({ message: `Failed to fetch results.` });
                 }
             });
     };
 
-    renderResults = () => {
-        const { results } = this.state;
-        if (results.length) {
-            return (
-                <div className="results-container">
-                    { results.map((result) => {
-                        return (
-                            <div>
-                                <label>Location: {result.name}, {result.state_name}</label>
-                            </div>
-                        );
-                    })}
-                </div>
-            );
-        }
-    };
-
 	render() {
-        const {query} = this.state;
+        const {query, message, results} = this.state;
+
 		return (
 			<div className="search-container">
-				<label className="search-label" htmlFor="search-input">
-                <input
-                    type="text"
-                    value={query}
-                    id="search-input"
-                    placeholder="Search..."
-                    onChange={this.handleChange}
-                />
-                <i className="fa fa-search search-icon"/>
-				</label>
+                <div className="search-container-bar">
+                    <label>Searching for</label>
+                    <label className="search-label" htmlFor="search-input">
+                        <input
+                            type="text"
+                            value={query}
+                            id="search-input"
+                            placeholder="City or State name..."
+                            onChange={this.handleChange}
+                        />
+                        <i className="fa fa-search search-icon"/>
+                    </label>
+                </div>
 
-                { this.renderResults() }
+                { message && <p className="message">{message}</p> }
+                <SearchResults results={results}/>
 			</div>
         )
 	}
