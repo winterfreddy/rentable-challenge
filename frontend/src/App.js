@@ -1,13 +1,16 @@
 import React from 'react';
+import { Router, Route } from 'react-router-dom';
 import Search from './Search/Search.js'
 
 class App extends React.Component {
 
   render() {
     return(
-      <div>
-        <Search />
-      </div>
+      <Router>
+        <div>
+          <Route path="/:query" ><Search /></Route>
+        </div>
+      </Router>
     )
   }
 }

@@ -9,6 +9,7 @@ class Search extends React.Component {
 		super(props);
 		this.state = {
 			query: '',
+            jsonBlob: [],
             results: [],
             message: ''
 		};
@@ -19,7 +20,9 @@ class Search extends React.Component {
 
     handleChange(e) {
         const query = e.target.value;
-        window.localStorage.removeItem('query');
+        // window.localStorage.removeItem('query');
+        this.props.history.push(query);
+        console.log(this.props.history);
             
         if(!query) {
             this.setState({ query, results: [], message: '' } );
@@ -33,10 +36,17 @@ class Search extends React.Component {
 
     componentDidMount() {
         this.checkLocalStorage();
+
+        axios.get('https://abodo-misc.s3.amazonaws.com/us_cities.json')
+            .then(res => {
+                // console.log(res);
+                this.setState({jsonBlob: res.data})
+            })
     }
 
     checkLocalStorage() {
-        let data = window.localStorage.getItem('query');
+        let data = this.props.match.params ? this.props.match.params.query : '';
+
         if(data !== "null" && data !== "undefined") {
             this.setState({ query: data }, () => {
                 this.fetchSearchResults(data);
@@ -45,27 +55,31 @@ class Search extends React.Component {
     }
 
     fetchSearchResults = (query) => {
-        const searchURL = 'https://abodo-misc.s3.amazonaws.com/us_cities.json';
-        if (this.cancel) {
-            this.cancel.cancel();
-        }
-        this.cancel = axios.CancelToken.source();
+        // const searchURL = 'https://abodo-misc.s3.amazonaws.com/us_cities.json';
+        // if (this.cancel) {
+        //     this.cancel.cancel();
+        // }
+        // this.cancel = axios.CancelToken.source();
         
-        axios.get(searchURL, { cancelToken: this.cancel.token })
-            .then(res => {
-                window.localStorage.setItem('query', query);
-                let data = res.data.filter(entry => (entry.name).includes(query) || (entry.state_name).includes(query));
-                const resultNotFoundMsg = !data.length ? 'No places found. Search differently.' : '';
-                this.setState({
-                    results: data,
-                    message: resultNotFoundMsg
-                });
-            })
-            .catch((error) => {
-                if (axios.isCancel(error) || error) {
-                    this.setState({ message: `Failed to fetch results.` });
-                }
-            });
+        // axios.get(searchURL, { cancelToken: this.cancel.token })
+        //     .then(res => {
+        //         window.localStorage.setItem('query', query);
+        //         let data = res.data.filter(entry => (entry.name).includes(query) || (entry.state_name).includes(query));
+        //         const resultNotFoundMsg = !data.length ? 'No places found. Search differently.' : '';
+        //         this.setState({
+        //             results: data,
+        //             message: resultNotFoundMsg
+        //         });
+        //     })
+        //     .catch((error) => {
+        //         if (axios.isCancel(error) || error) {
+        //             this.setState({ message: `Failed to fetch results.` });
+        //         }
+        //     });
+        let { jsonBlob } = this.state;
+
+        let data = jsonBlob.filter(entry => (entry.name).includes(query) || (entry.state_name).includes(query));
+        this.setState({results: data});
     };
 
 	render() {
